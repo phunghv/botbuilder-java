@@ -387,6 +387,13 @@
           <configuration>
             <source>${jdk.version}</source>
             <target>${jdk.version}</target>
+            <compilerArgs>
+              <!-- The output of Xlint is not shown by default, but we activate it for the QA bot
+              to be able to get more warnings -->
+              <!-- <arg>-Xlint:all</arg> -->
+              <!-- Prevents recompilation due to missing package-info.class, see MCOMPILER-205 -->
+              <arg>-Xpkginfo:always</arg>
+            </compilerArgs>
           </configuration>
         </plugin>
         <plugin>
@@ -401,6 +408,13 @@
               </manifest>
             </archive>
           </configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>test-jar</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
