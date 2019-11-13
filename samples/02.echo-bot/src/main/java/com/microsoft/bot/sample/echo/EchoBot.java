@@ -8,6 +8,7 @@ import com.microsoft.bot.builder.ActivityHandler;
 import com.microsoft.bot.builder.MessageFactory;
 import com.microsoft.bot.builder.TurnContext;
 import com.microsoft.bot.schema.ChannelAccount;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -23,20 +24,39 @@ import java.util.concurrent.CompletableFuture;
  * to new conversation participants.</p>
  */
 @Component
+@Slf4j
 public class EchoBot extends ActivityHandler {
     @Override
     protected CompletableFuture<Void> onMessageActivity(TurnContext turnContext) {
         return turnContext
-            .sendActivity(MessageFactory.text("Echo: " + turnContext.getActivity().getText()))
-            .thenApply(sendResult -> null);
+                .sendActivity(MessageFactory.text("Echo: " + turnContext.getActivity().getText()))
+                .thenApply(sendResult -> null);
+    }
+
+    @Override
+    protected CompletableFuture<Void> onConversationUpdateActivity(TurnContext turnContext) {
+        log.info("onConversationUpdateActivity");
+        return super.onConversationUpdateActivity(turnContext);
+    }
+
+    @Override
+    protected CompletableFuture<Void> onEventActivity(TurnContext turnContext) {
+        log.info("onEventActivity");
+        return super.onEventActivity(turnContext);
+    }
+
+    @Override
+    protected CompletableFuture<Void> onUnrecognizedActivityType(TurnContext turnContext) {
+        log.info("onUnrecognizedActivityType");
+        return super.onUnrecognizedActivityType(turnContext);
     }
 
     @Override
     protected CompletableFuture<Void> onMembersAdded(List<ChannelAccount> membersAdded, TurnContext turnContext) {
         return membersAdded.stream()
-            .filter(member -> !StringUtils.equals(member.getId(), turnContext.getActivity().getRecipient().getId()))
-            .map(channel -> turnContext.sendActivity(MessageFactory.text("Hello and welcome!")))
-            .collect(CompletableFutures.toFutureList())
-            .thenApply(resourceResponses -> null);
+                .filter(member -> !StringUtils.equals(member.getId(), turnContext.getActivity().getRecipient().getId()))
+                .map(channel -> turnContext.sendActivity(MessageFactory.text("Hello and welcome!")))
+                .collect(CompletableFutures.toFutureList())
+                .thenApply(resourceResponses -> null);
     }
 }
