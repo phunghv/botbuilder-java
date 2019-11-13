@@ -7,7 +7,9 @@ import com.codepoetics.protonpack.collectors.CompletableFutures;
 import com.microsoft.bot.builder.ActivityHandler;
 import com.microsoft.bot.builder.MessageFactory;
 import com.microsoft.bot.builder.TurnContext;
+import com.microsoft.bot.schema.Activity;
 import com.microsoft.bot.schema.ChannelAccount;
+import com.microsoft.bot.schema.ConversationReference;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -26,8 +28,15 @@ import java.util.concurrent.CompletableFuture;
 @Component
 @Slf4j
 public class EchoBot extends ActivityHandler {
+    private ConversationReferences conversationReferences;
+
+    public EchoBot(ConversationReferences withReferences) {
+        conversationReferences = withReferences;
+    }
+
     @Override
     protected CompletableFuture<Void> onMessageActivity(TurnContext turnContext) {
+        addConversationReference(turnContext.getActivity());
         return turnContext
                 .sendActivity(MessageFactory.text("Echo: " + turnContext.getActivity().getText()))
                 .thenApply(sendResult -> null);
@@ -35,8 +44,13 @@ public class EchoBot extends ActivityHandler {
 
     @Override
     protected CompletableFuture<Void> onConversationUpdateActivity(TurnContext turnContext) {
-        log.info("onConversationUpdateActivity");
+        addConversationReference(turnContext.getActivity());
         return super.onConversationUpdateActivity(turnContext);
+    }
+
+    private void addConversationReference(Activity activity) {
+        ConversationReference conversationReference = activity.getConversationReference();
+        conversationReferences.put(conversationReference.getUser().getId(), conversationReference);
     }
 
     @Override
@@ -48,11 +62,13 @@ public class EchoBot extends ActivityHandler {
     @Override
     protected CompletableFuture<Void> onUnrecognizedActivityType(TurnContext turnContext) {
         log.info("onUnrecognizedActivityType");
+        addConversationReference(turnContext.getActivity());
         return super.onUnrecognizedActivityType(turnContext);
     }
 
     @Override
     protected CompletableFuture<Void> onMembersAdded(List<ChannelAccount> membersAdded, TurnContext turnContext) {
+        addConversationReference(turnContext.getActivity());
         return membersAdded.stream()
                 .filter(member -> !StringUtils.equals(member.getId(), turnContext.getActivity().getRecipient().getId()))
                 .map(channel -> turnContext.sendActivity(MessageFactory.text("Hello and welcome!")))

@@ -10,6 +10,7 @@ import com.microsoft.bot.integration.spring.BotController;
 import com.microsoft.bot.integration.spring.BotDependencyConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 
 /**
@@ -41,5 +42,10 @@ public class Application extends BotDependencyConfiguration {
     @Override
     public BotFrameworkHttpAdapter getBotFrameworkHttpAdaptor(Configuration configuration) {
         return new AdapterWithErrorHandler(configuration);
+    }
+
+    @Bean
+    public ConversationReferences getConversationReferences() {
+        return new ConversationReferences();
     }
 }
