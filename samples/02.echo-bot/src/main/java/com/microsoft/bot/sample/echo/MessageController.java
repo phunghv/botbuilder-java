@@ -8,8 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Optional;
@@ -34,9 +34,9 @@ public class MessageController {
         }
     }
 
-    @GetMapping("/api/send")
-    public CompletableFuture<ResponseEntity<Object>> incoming(@RequestParam String msg) {
-        String message = Optional.ofNullable(msg).orElse("---");
+    @PostMapping("/api/send")
+    public CompletableFuture<ResponseEntity<Object>> incoming(@RequestBody Message msg) {
+        String message = Optional.ofNullable(msg).map(Message::getMessage).orElse("---");
         logger.info("send : {}", message);
         return CompletableFuture.supplyAsync(() -> {
             try {
@@ -47,7 +47,7 @@ public class MessageController {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            return new ResponseEntity<>("sucessss", HttpStatus.OK);
+            return new ResponseEntity<>("success", HttpStatus.OK);
         });
     }
 }
